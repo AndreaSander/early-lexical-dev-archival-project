@@ -1,0 +1,5 @@
+effect,group,term,estimate,std.error,statistic,p.value
+fixed,NA,(Intercept),0.9136452661524125,0.07749790965827293,11.789289158651268,< .001
+fixed,NA,exp_centered,0.8068591276634001,0.23254548184386356,3.4696830971119192,.001
+ran_pars,media_name,sd__(Intercept),0.491314624556212,NA,NA,  NA
+ran_pars,subject_id,sd__(Intercept),0,NA,NA,  NA

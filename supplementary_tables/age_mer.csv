@@ -1,0 +1,7 @@
+effect,group,term,estimate,std.error,statistic
+fixed,NA,X(Intercept),0.6426557181571577,0.011925686796406897,53.888361243126404
+fixed,NA,Xs(age_centered)Fx1,0.04684060115461055,0.039984566448810786,1.1714670262731752
+ran_pars,media_name,sd__(Intercept),0.08705258369493593,NA,NA
+ran_pars,subject_id,sd__(Intercept),0.055758485654577084,NA,NA
+ran_pars,Xr,sd__s(age_centered),0.17628751980373675,NA,NA
+ran_pars,Residual,sd__Observation,0.28781624997983674,NA,NA

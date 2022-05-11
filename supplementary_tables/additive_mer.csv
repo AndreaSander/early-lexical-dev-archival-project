@@ -1,0 +1,9 @@
+effect,group,term,estimate,std.error,statistic
+fixed,NA,X(Intercept),0.6420531016769685,0.011861135762959116,54.13082815239517
+fixed,NA,Xs(exp_centered)Fx1,0.022738735320221422,0.008500279610214071,2.6750573349255706
+fixed,NA,Xs(age_centered)Fx1,0.052111290084837884,0.033206060504415075,1.5693306972656142
+ran_pars,media_name,sd__(Intercept),0.08673825401625111,NA,NA
+ran_pars,subject_id,sd__(Intercept),0.054670975756603915,NA,NA
+ran_pars,Xr.0,sd__s(age_centered),0.13576694004838155,NA,NA
+ran_pars,Xr,sd__s(exp_centered),6.7176332374082945e-6,NA,NA
+ran_pars,Residual,sd__Observation,0.287579076740993,NA,NA

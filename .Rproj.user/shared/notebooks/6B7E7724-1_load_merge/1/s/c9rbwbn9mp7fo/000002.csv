@@ -1,0 +1,6 @@
+"0","load(here(""anonymous_eye_data/eye_data_learn.Rda""))"
+"0",""
+"0","eye_data_learn <- eye_data_learn %>%"
+"0","  select(all_of(keepcols))"
+"2","select: dropped 395 variables (ExportDate, StudioVersionRec, ParticipantName, RecordingDuration, RecordingResolution, …)
+"
