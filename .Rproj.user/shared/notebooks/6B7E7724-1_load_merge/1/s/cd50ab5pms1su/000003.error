@@ -1,1 +1,0 @@
-{"frames":[{"func":"load(here(\"anonymous_eye_data/eye_data_cogmisp.Rda\"))","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in load(here(\"anonymous_eye_data/eye_data_cogmisp.Rda\")) : \n  error reading from connection\n"}
