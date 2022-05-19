@@ -112,6 +112,8 @@ x + theme_bw() +
   guides (col= guide_legend(reverse= TRUE))+
   theme(legend.text = element_text(size = 15), legend.title = element_text(size = 15), plot.title = element_text(size = 20), axis.title = element_text(size = 18), axis.text = element_text(size = 15))   
 
+
+ggsave("predicted_values.png", dpi = "print", width = 14, height = 7, units = "in")
 ```
 
 ##----Time course plots----##
@@ -121,11 +123,10 @@ tc <- arch_re_zero%>%
                               exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
                               exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
                               exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))%>%
-  mutate(age_bins= case_when(age_months >=14 & age_months<=20.9~"14-20",
-                             age_months >=21 & age_months<=28.9~"21-28",
-                             age_months >=29 & age_months<=36.9~"29-36",
-                             age_months>=37 & age_months<=48.9~"37-48"))
-
+  mutate(age_bins= case_when(age_months >=14 & age_months<=20.9~"14-20 (m)",
+                             age_months >=21 & age_months<=28.9~"21-28 (m)",
+                             age_months >=29 & age_months<=36.9~"29-36 (m)",
+                             age_months>=37 & age_months<=48.9~"37-48 (m)"))
 tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
   group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
@@ -135,16 +136,17 @@ tc%>%
   #    stat_summary(aes(y = looking), fun.y=mean, colour="black", geom="line", size=0.8, alpha=0.5)+
   facet_grid(~age_bins)+
   scale_y_continuous(limits = c(0,1))+
-  labs(x="time from noun onset (ms)", 
-       y= "proportion looking to target")+
-  ggtitle("time series of infant looking by age group divided by experience")+
-  scale_color_manual(values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+  
+  labs(x="Time from noun onset (ms)", 
+       y= "Proportion looking to target")+
+  ggtitle("Time series of infant looking by age group divided by experience")+
+  scale_color_manual(name= "experience bins (%)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
   theme_bw()+
   theme(legend.text = element_text(size = 15), legend.title = element_text(size = 15), 
         plot.title = element_text(size = 20), axis.title = element_text(size = 18), 
         axis.text = element_text(size = 15), strip.text.x = element_text(size = 15)) +
   guides (col= guide_legend(reverse= TRUE))
 
+ggsave("time_course.png", dpi = "print", width = 14, height = 7, units = "in")
 
 tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
