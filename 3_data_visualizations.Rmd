@@ -108,12 +108,12 @@ x + theme_bw() +
   ylim(0.0, 1.0)+
   xlim(14, 48)+
   geom_hline(yintercept = 0.5 , linetype = "dashed")+
-  annotate("text", y=0.48, x=30, label="Chance looking to target", size=5)+
+  annotate("text", y=0.48, x=30, label="Chance looking to target", size=8)+
   guides (col= guide_legend(reverse= TRUE))+
-  theme(legend.text = element_text(size = 15), legend.title = element_text(size = 15), plot.title = element_text(size = 20), axis.title = element_text(size = 18), axis.text = element_text(size = 15))   
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
 
-ggsave("predicted_values.png", dpi = "print", width = 14, height = 7, units = "in")
+ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
 ```
 
 ##----Time course plots----##
@@ -141,12 +141,12 @@ tc%>%
   ggtitle("Time series of infant looking by age group divided by experience")+
   scale_color_manual(name= "experience bins (%)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
   theme_bw()+
-  theme(legend.text = element_text(size = 15), legend.title = element_text(size = 15), 
-        plot.title = element_text(size = 20), axis.title = element_text(size = 18), 
-        axis.text = element_text(size = 15), strip.text.x = element_text(size = 15)) +
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
+        plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
+        axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
   guides (col= guide_legend(reverse= TRUE))
 
-ggsave("time_course.png", dpi = "print", width = 14, height = 7, units = "in")
+ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
 
 tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
