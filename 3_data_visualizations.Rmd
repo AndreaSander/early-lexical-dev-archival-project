@@ -105,10 +105,10 @@ x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32,
 x + theme_bw() +
   xlab("Age (months)")+
   ylab("Proportion looking to target")+
-  ylim(0.0, 1.0)+
+  ylim(0.4, 1.0)+
   xlim(14, 48)+
   geom_hline(yintercept = 0.5 , linetype = "dashed")+
-  annotate("text", y=0.48, x=30, label="Chance looking to target", size=8)+
+  annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
   guides (col= guide_legend(reverse= TRUE))+
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
@@ -139,7 +139,7 @@ tc%>%
   labs(x="Time from noun onset (ms)", 
        y= "Proportion looking to target")+
   ggtitle("Time series of infant looking by age group divided by experience")+
-  scale_color_manual(name= "experience bins (%)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
+  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
   theme_bw()+
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
         plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
@@ -148,7 +148,7 @@ tc%>%
 
 ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
 
-tc%>%
+reversed <- tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
   group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
   summarise(looking=mean(target, na.rm=T))%>%
