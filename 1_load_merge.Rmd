@@ -357,3 +357,14 @@ final <- final %>%
 
 
 ```{r}
+## this chunk is to create alternative final data sets to explore reviewrs concerns
+arch_final_triling <- arch_aoi_data %>%
+  filter(exclusion_premature=="F")%>% # we lost 16
+  filter (exclusion_low_birth_weight=="F")%>% #we lost 5 more
+  filter (exclusion_health=="F")%>% # we lost 2 more
+  filter (exclusion_dev_delay=="F")%>% # we lost 3 more
+  filter (exclusion_technical_error=="F")%>% #we lost 9 more
+  filter (exclusion_testing_error=="F") # we lost 3 more
+
+
+#save(arch_final_triling, file = here("merged_data_sets/arch_final_triling.Rda"))
