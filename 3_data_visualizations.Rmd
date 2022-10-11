@@ -21,6 +21,7 @@ library(ggiraph)
 library(ggiraphExtra)
 library(ggeffects)
 library(sjPlot)
+library(ggExtra)
 ```
 
 ##------------------- Load the cleaned data & prepare for analyses-------------------------------------##
@@ -113,7 +114,7 @@ x + theme_bw() +
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
 
-ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
+#ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
 ```
 
 ##----Time course plots----##
@@ -180,11 +181,63 @@ pm<- m %>%
   ylab("Experience with target language (%)")+
   theme_bw()
 
-marginal<- ggMarginal(pm, type="histogram", 
-           xparams = list(binwidth = 5, fill= "#fc8d59"),
-           yparams = list(binwidth = 10, fill= "#91cf60"))
+marginal<- ggMarginal(pm, type="histogram", aes(y=after_stat(count)),
+           xparams = list(binwidth = 8.5, fill= "#fc8d59"),
+           yparams = list(binwidth = 25, fill= "#91cf60"))
 print(marginal)
-#ggsave("marginal_plot.jpg")
+ggsave("marginal_plot.jpg")
+
+```
+
+
+```{r}
+## Extra plots
+library(magick)
+
+x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"),
+           legend.title = "Exposure to target language (proportion)", title = "Predicted values of looking accuracy for the additive model")
+
+
+ x.2 + theme_bw() +
+  xlab("Age (months)")+
+  ylab("Proportion looking to target")+
+  ylim(0.4, 1.0)+
+  xlim(14, 48)+
+  geom_hline(yintercept = 0.5 , linetype = "dashed")+
+  annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
+  guides (col= guide_legend(reverse= TRUE))+
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))  
+
+ 
+ ggsave("predicted_values_layer.png", dpi = "print", width = 16, height = 8, units = "in")
+
+real <- arch_re_zero%>%
+  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.25 ~".25",
+                              exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
+                              exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
+                              exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))
+ real%>%
+  filter(noun_onset>=360 & noun_onset<=3000)%>%
+  group_by(age_months,exp_bins)%>%
+  summarise(looking=mean(target, na.rm=T))%>%
+  ggplot(aes(x=age_months, y=looking, color=exp_bins))+
+  geom_point()+
+  scale_y_continuous(limits = c(0,1))+
+  labs(x="", 
+       y= "")+
+  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
+  theme_bw()#+
+  #theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
+  #      plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
+  #      axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
+  #guides (col= guide_legend(reverse= TRUE))
+
+ ggsave("real_values_layer.png", dpi = "print", width = 16, height = 8, units = "in")
+ 
+plot_1<- image_read("predicted_values_layer.png")
+plot_2<- image_read("real_values_layer.png")
+image_flatten(c(plot_2, plot_1), operator = "Add")
+
 
 ```
 
