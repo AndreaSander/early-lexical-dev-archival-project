@@ -194,19 +194,16 @@ ggsave("marginal_plot.jpg")
 ## Extra plots
 library(magick)
 
-x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"),
-           legend.title = "Exposure to target language (proportion)", title = "Predicted values of looking accuracy for the additive model")
+x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"), title="")
 
 
  x.2 + theme_bw() +
-  xlab("Age (months)")+
-  ylab("Proportion looking to target")+
   ylim(0.4, 1.0)+
   xlim(14, 48)+
   geom_hline(yintercept = 0.5 , linetype = "dashed")+
   annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
   guides (col= guide_legend(reverse= TRUE))+
-  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))  
+  theme(legend.position="none", axis.text = element_text(size = 30))  
 
  
  ggsave("predicted_values_layer.png", dpi = "print", width = 16, height = 8, units = "in")
@@ -226,20 +223,26 @@ real <- arch_re_zero%>%
   labs(x="", 
        y= "")+
   scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
-  theme_bw()#+
-  #theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
-  #      plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
-  #      axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
-  #guides (col= guide_legend(reverse= TRUE))
+  theme_bw()+
+     ylim(0.4, 1.0)+
+  xlim(14, 48)+
+  theme(legend.position = "none", 
+  axis.text = element_text(size = 30), strip.text.x = element_text(size = 30)) 
 
  ggsave("real_values_layer.png", dpi = "print", width = 16, height = 8, units = "in")
  
+
 plot_1<- image_read("predicted_values_layer.png")
 plot_2<- image_read("real_values_layer.png")
-image_flatten(c(plot_2, plot_1), operator = "Add")
+both <- image_scale(c(plot_1, plot_2), "1200")
+
+image_average(both)
+
 
 
 ```
 
 
 ```{r}
+
+
