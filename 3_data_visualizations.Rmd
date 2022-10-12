@@ -288,7 +288,7 @@ plot_3<- image_read("predicted_values_layer2.png")
 plot_4<- image_read("real_values_layer2.png")
 both2 <- image_scale(c(plot_3, plot_4), "1200")
 
-image_average(both)
+image_average(both2)
 
 
 ```
