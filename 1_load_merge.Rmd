@@ -357,7 +357,7 @@ final <- final %>%
 
 
 ```{r}
-## this chunk is to create alternative final data sets to explore reviewrs concerns
+## this chunk is to create alternative final data set to include trilingual data, as per reviewers concerns
 arch_final_triling <- arch_aoi_data %>%
   filter(exclusion_premature=="F")%>% # we lost 16
   filter (exclusion_low_birth_weight=="F")%>% #we lost 5 more
@@ -366,5 +366,60 @@ arch_final_triling <- arch_aoi_data %>%
   filter (exclusion_technical_error=="F")%>% #we lost 9 more
   filter (exclusion_testing_error=="F") # we lost 3 more
 
+arch_final_triling <- arch_final_triling %>%
+  mutate (half_age = age_months/2) %>%
+  mutate(seq_fr_exclude = case_when(
+    acq_age_fr < half_age ~ "false",
+    acq_age_fr >= half_age~ "true"
+  ))%>%
+  mutate(seq_eng_exclude= case_when(
+    acq_age_eng < half_age ~ "false",
+    acq_age_eng >= half_age~ "true"
+  )) %>%
+  filter(seq_fr_exclude=="false")%>%
+  filter(seq_eng_exclude=="false") #18 extra exclusions
 
-#save(arch_final_triling, file = here("merged_data_sets/arch_final_triling.Rda"))
+#keeps only relevant trials. For this paper we only want the control or training trials, not the experimental condition
+
+
+arch_final_triling<- arch_final_triling %>%
+  filter(trial_type %in% c("normal", "filler", "same")) 
+
+save(arch_final_triling, file = here("merged_data_sets/arch_final_triling.Rda"))
+```
+
+
+```{r}
+## this chunk is to create alternative final data set to change inclusion criteria from half age to minimum 6 months to address reviewers concerns.
+arch_final_6m<- arch_aoi_data %>%
+  filter(exclusion_premature=="F")%>% # we lost 16
+  filter (exclusion_low_birth_weight=="F")%>% #we lost 5 more
+  filter (exclusion_health=="F")%>% # we lost 2 more
+  filter (exclusion_dev_delay=="F")%>% # we lost 3 more
+  filter (exclusion_technical_error=="F")%>% #we lost 9 more
+  filter (exclusion_testing_error=="F")%>% # we lost 3 more
+  filter(other_lang_exp <= 10) #we lost 13 more 
+  
+arch_final_6m <- arch_final_6m %>%
+  mutate(seq_fr_exclude = case_when(
+    acq_age_fr < 6 ~ "false",
+    acq_age_fr >= 6~ "true"
+  ))%>%
+  mutate(seq_eng_exclude= case_when(
+    acq_age_eng < 6 ~ "false",
+    acq_age_eng >= 6~ "true"
+  )) %>%
+  filter(seq_fr_exclude=="false")%>%
+  filter(seq_eng_exclude=="false") #18 extra exclusions
+
+
+arch_final_6m <- arch_final_6m %>%
+  filter(trial_type %in% c("normal", "filler", "same")) 
+
+save(arch_final_6m, file = here("merged_data_sets/arch_final_6m.Rda"))
+
+
+```
+
+
+```{r}

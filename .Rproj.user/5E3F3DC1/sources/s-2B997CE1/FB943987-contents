@@ -260,7 +260,7 @@ acc_logi <-  acc_logi %>% as.data.frame() %>%
 
 ```
 
-##--------- Running linear mixed models wit data from trilinguals included---------##
+##--------- Running linear mixed models with data from trilinguals included---------##
 ```{r}
 load(here("merged_data_sets/arch_final_triling.Rda"))
 
