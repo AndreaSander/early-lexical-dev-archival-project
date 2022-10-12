@@ -1,0 +1,11 @@
+"0","arch_re_zero <- arch_re_zero%>%"
+"0","  ungroup()%>%"
+"0","  group_by(studio_test_name, eng_exp, fre_exp)%>%"
+"0","  mutate(trial_lang = case_when(str_detect(studio_test_name,""E"")~ ""english"","
+"0","                                str_detect(studio_test_name, ""F"")~ ""french""))"
+"2","ungroup: no grouping variables
+"
+"2","group_by: 3 grouping variables (studio_test_name, eng_exp, fre_exp)
+"
+"2","mutate (grouped): new variable 'trial_lang' (character) with 2 unique values and 0% NA
+"

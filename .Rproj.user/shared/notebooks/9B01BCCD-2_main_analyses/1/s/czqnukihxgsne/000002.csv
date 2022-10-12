@@ -1,0 +1,16 @@
+"0","for_lmm <- arch_re_zero_c"
+"0",""
+"0","for_lmm <- for_lmm %>%"
+"0","  filter(noun_onset>= 360 & noun_onset <= 3000)%>%"
+"0","  group_by(recording_name, subject_id, trial_number, media_name, age_centered,exp_centered)%>%"
+"0","  summarise(samples_total=sum(target==TRUE, target==FALSE ),"
+"0","            samples_target=sum(target))%>%"
+"0","  mutate(prop_looking= samples_target/samples_total) "
+"2","filter (grouped): removed 381,567 rows (62%), 229,324 rows remaining
+"
+"2","group_by: 6 grouping variables (recording_name, subject_id, trial_number, media_name, age_centered, …)
+"
+"2","summarise: now 1,873 rows and 8 columns, 5 group variables remaining (recording_name, subject_id, trial_number, media_name, age_centered)
+"
+"2","mutate (grouped): new variable 'prop_looking' (double) with 1,145 unique values and 0% NA
+"

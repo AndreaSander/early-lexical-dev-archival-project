@@ -1,0 +1,53 @@
+"0","library(see)"
+"2","
+Attaching package: ‘see’
+
+"
+"2","The following object is masked from ‘package:ggiraphExtra’:
+
+    coord_radar
+
+"
+"0","library(patchwork)"
+"0","library(tidyverse)"
+"0","library(here)"
+"0","library(dplyr)"
+"0","library(lme4)"
+"0","library(lmerTest)"
+"0","library(afex)"
+"0","library(gazer)"
+"0","library(mgcv)"
+"2","Loading required package: nlme
+"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    lmList
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"2","This is mgcv 1.8-39. For overview type 'help(""mgcv-package"")'.
+"
+"0","library(gamm4)"
+"2","This is gamm4 0.2-6
+
+"
+"0","library(broom)"
+"0","library(ggiraph)"
+"0","library(ggiraphExtra)"
+"0","library(ggeffects)"
+"0","library(ggExtra)"
+"0","library(sjPlot)"
+"0","library(DHARMa)"
+"2","This is DHARMa 0.4.5. For overview type '?DHARMa'. For recent changes, type news(package = 'DHARMa')
+"
+"0","library(performance)"
+"0","library(broom.mixed)"
+"0","library(rempsyc)"
