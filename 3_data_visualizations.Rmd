@@ -192,6 +192,8 @@ ggsave("marginal_plot.jpg")
 
 ```{r}
 ## Extra plots
+
+## 1) Making real data be mean looking to target
 library(magick)
 
 x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"), title="")
@@ -244,5 +246,88 @@ image_average(both)
 
 
 ```{r}
+#real data with proportion looking to make it comparable
+
+x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"), title="")
 
 
+ x.2 + theme_bw() +
+  ylim(0.4, 1.0)+
+  xlim(14, 48)+
+  geom_hline(yintercept = 0.5 , linetype = "dashed")+
+  annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
+  guides (col= guide_legend(reverse= TRUE))+
+  theme(legend.position="none", axis.text = element_text(size = 30))  
+
+ 
+ ggsave("predicted_values_layer2.png", dpi = "print", width = 16, height = 8, units = "in")
+
+real <- for_lmm_viz %>%
+  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.25 ~".25",
+                              exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
+                              exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
+                              exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))
+ real%>%
+  group_by(age_months,exp_bins, prop_looking)%>%
+  ggplot(aes(x=age_months, y=prop_looking, color=exp_bins))+
+  geom_point()+
+  scale_y_continuous(limits = c(0,1))+
+  labs(x="", 
+       y= "")+
+  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
+  theme_bw()+
+     ylim(0.4, 1.0)+
+  xlim(14, 48)+
+  theme(legend.position = "none", 
+  axis.text = element_text(size = 30), strip.text.x = element_text(size = 30)) 
+
+ ggsave("real_values_layer2.png", dpi = "print", width = 16, height = 8, units = "in")
+ 
+
+plot_3<- image_read("predicted_values_layer2.png")
+plot_4<- image_read("real_values_layer2.png")
+both2 <- image_scale(c(plot_3, plot_4), "1200")
+
+image_average(both)
+
+
+```
+
+
+```{r}
+## Demonstration that average and prop is the same in the time course graphs.
+
+tc2 <- arch_re_zero%>%
+  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.25 ~".25",
+                              exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
+                              exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
+                              exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))%>%
+  mutate(age_bins= case_when(age_months >=14 & age_months<=20.9~"14-20 (m)",
+                             age_months >=21 & age_months<=28.9~"21-28 (m)",
+                             age_months >=29 & age_months<=36.9~"29-36 (m)",
+                             age_months>=37 & age_months<=48.9~"37-48 (m)"))
+tc2%>%
+  filter(noun_onset>=360 & noun_onset<=3000)%>%
+  group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total)%>%
+  ggplot(aes(x=interval, y=prop_looking, color=exp_bins))+
+  geom_line(size=1)+
+  #    stat_summary(aes(y = looking), fun.y=mean, colour="black", geom="line", size=0.8, alpha=0.5)+
+  facet_grid(~age_bins)+
+  scale_y_continuous(limits = c(0,1))+
+  labs(x="Time from noun onset (ms)", 
+       y= "Proportion looking to target")+
+  ggtitle("Time series of infant looking by age group divided by experience")+
+  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
+  theme_bw()+
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
+        plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
+        axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
+  guides (col= guide_legend(reverse= TRUE))
+
+```
+
+
+```{r}

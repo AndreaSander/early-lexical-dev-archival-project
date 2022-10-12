@@ -1,0 +1,16 @@
+"0","## 1) Making real data be mean looking to target
+library(magick)
+"
+"2","Linking to ImageMagick 6.9.12.3
+Enabled features: cairo, freetype, fftw, ghostscript, heic, lcms, pango, raw, rsvg, webp
+Disabled features: fontconfig, x11
+"
+"2","
+Attaching package: ‘magick’
+
+"
+"2","The following object is masked from ‘package:ggiraphExtra’:
+
+    rose
+
+"
