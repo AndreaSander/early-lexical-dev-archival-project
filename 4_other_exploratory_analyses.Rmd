@@ -419,4 +419,38 @@ monoling_e <- arch_re_zero %>%
 
 m_e<- unique(monoling_e$recording_name) #23
 ```
+```{r}
+##Create alternative LMM with age of acquisition as a predictor
+library(wordbankr)
+
+#english items
+eng_items_compmix <- arch_re_zero %>%
+  filter(trial_lang =="english") %>%
+  filter(studio_project_name=="CompMix-36") %>%
+  separate(media_name, into = c("item", "2", "3"), sep="_")
+
+eng_compmix<- unique(eng_items_compmix$item)
+
+
+
+eng_cdi_ws<- get_item_data(language = "English (American)", form = "WS") %>%
+  filter(item_definition = c(""))
+
+
+```
+
+
+```{r}
+arch_items <- arch_re_zero %>%
+  filter(trial_lang =="english")%>%
+mutate(item = case_when(str_detect(media_name, "Ear")~"ear",
+                        str_detect(media_name, "Apple")~"apple",
+                        str_detect(media_name, "Fish")~"fish",
+                        str_detect(media_name, "Dog")~"dog",
+                        str_detect(media_name, "Spoon")~"spoon",
+                        str_detect(media_name, "Hand")~"hand",
+                        str_detect(media_name, "Toothbrush")~"Toothbrush",
+                        str_detect(media_name, "Froggy")~"ear",
+                        str_detect(media_name, "Ear")~"ear")) 
+```
 

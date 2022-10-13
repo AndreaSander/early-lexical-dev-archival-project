@@ -1,0 +1,456 @@
+---
+title: "other_exploratory_analyses"
+author: "ASM"
+date: "09/05/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(here)
+library(dplyr)
+library(lme4)
+library(lmerTest)
+library(afex)
+library(gazer)
+library(mgcv)
+library(gamm4)
+library(broom)
+library(rempsyc)
+```
+
+##------------------- Load the cleaned data & prepare for analyses-------------------------------------##
+
+```{r}
+load(here("merged_data_sets/arch_final.Rda"))
+
+arch_re_zero<- arch_final%>%
+  group_by(studio_project_name, studio_test_name, trial_number, recording_name)%>%
+  mutate(trial_from_zero = recording_timestamp-min(recording_timestamp))%>%
+  group_by(studio_project_name)%>%
+  mutate(noun_onset = case_when(studio_project_name=="CompMix-36"~trial_from_zero-3000,
+                                studio_project_name=="LearnMix-36"~trial_from_zero-4500,
+                                studio_project_name=="Mix-20"~trial_from_zero-5400,
+                                studio_project_name=="Mix-14"~trial_from_zero-5400,
+                                studio_project_name=="CogMisp-24"~trial_from_zero-1500))%>%
+  ungroup()%>%
+  rename(target_side=target, distractor_side=distractor,
+         gaze_point_x= gaze_point_x_adc_spx, 
+         gaze_point_y = gaze_point_y_adc_spx)%>%
+  filter(gaze_point_x>=0 & gaze_point_x<= 1920)%>% #keeps only observations that are in the screen
+  filter(gaze_point_y>=0 & gaze_point_y<=1200)%>%
+  filter(!is.na(gaze_point_x))%>% #gets rid of the observations where tobii didn't get any reading
+  filter(!is.na(gaze_point_y))%>%
+  filter(!is.na(validity_left)) %>%
+  filter(!is.na(validity_right)) %>%
+  filter(validity_left<= 1)%>%
+  filter(validity_right <= 1)%>%
+  mutate(target = case_when(gaze_point_x >= target_x_min&gaze_point_x <= target_x_max&gaze_point_y >= target_y_min&gaze_point_y <= target_y_max~TRUE, 
+                            TRUE~FALSE))
+
+```
+
+
+##-------------------Create trial language column to describe the language in which the babies were tested on-------------------------------------##
+```{r}
+arch_re_zero <- arch_re_zero%>%
+  ungroup()%>%
+  group_by(studio_test_name, eng_exp, fre_exp)%>%
+  mutate(trial_lang = case_when(str_detect(studio_test_name,"E")~ "english",
+                                str_detect(studio_test_name, "F")~ "french"))
+```
+
+
+##-------------------center age and experience-------------------------------------##
+```{r}
+#centering to an easy to interpret value that is close to the mean, 25 months for age and 50% for experience.
+arch_re_zero<- arch_re_zero%>%
+  mutate(exp_to_target_lang = case_when(trial_lang == "english" ~ eng_exp,
+                                        trial_lang == "french" ~ fre_exp)) %>%
+  mutate(exp_target_lang_prop = exp_to_target_lang/100)
+
+#mean(arch_re_zero$age_months)#25.79
+#mean(arch_re_zero$exp_target_lang_prop) #0.57
+
+ arch_re_zero_c<- arch_re_zero %>%
+  mutate(age_centered = age_months-25) %>%
+   mutate(exp_centered =exp_target_lang_prop - .50)
+
+
+
+```
+##A) GROWTH CURVE ANALYSES (GCA)
+
+##----Preparation for GCA----##
+```{r}
+for_gca <- arch_re_zero_c%>%
+  filter(noun_onset>=360 & noun_onset<=2500) %>%
+  mutate(time_bins= ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
+  ungroup()%>%
+  group_by(recording_name, subject_id, trial_number, media_name,age_centered, exp_centered, time_bins)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total ) 
+
+for_gca <- code_poly(for_gca, predictor = "time_bins", poly.order=3, draw.poly = FALSE)
+```
+
+
+##----Construction of 4 Growth Curve Models---##
+```{r}
+gca_age_only <- lmer (prop_looking ~ poly1*age_centered + poly2*age_centered + (1|subject_id) + (1|media_name), data = for_gca)
+summary(gca_age_only)
+
+gca_experience_only <- lmer (prop_looking ~ poly1*exp_centered + poly2*exp_centered+ (1|subject_id) + (1|media_name), data = for_gca)
+
+summary(gca_experience_only)
+
+gca_additive <- lmer (prop_looking ~ poly1*exp_centered + poly1*age_centered + poly2*exp_centered + poly2*age_centered + (1|subject_id) + (1|media_name), data = for_gca)
+
+gca_accumulator <- lmer (prop_looking ~ poly1*(exp_centered*age_centered)+ poly2*(exp_centered*age_centered)+ (1|subject_id) + (1|media_name), data = for_gca)
+
+```
+
+##------Get result tables for GCAs---##
+```{r}
+#age gc model results tables
+age_res<- tidy(gca_age_only)
+
+form_age_res <-  age_res %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/gc_age_table.csv")
+
+
+
+#Experience gc model results tables
+exp_res<- tidy(gca_experience_only)
+form_exp_res <-  exp_res %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/gc_exp_table.csv")
+
+
+#Aditive gc model results tables
+additive_res<- tidy(gca_additive)
+additive_res <-  additive_res %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/gc_aditive_table.csv")
+
+
+#Accumulator gc model results tables
+accumulator_res<- tidy(gca_accumulator)
+accumulator_res <-  accumulator_res %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/gc_acc_table.csv")
+```
+
+
+##B) GENERALIZED ADDITIVE MODELS (GAM)
+
+```{r}
+##-------------------Data preparation for GAMs and GLMER (LMMs)-------------------------------------##
+for_lmm <- arch_re_zero_c
+
+for_lmm <- for_lmm %>%
+  filter(noun_onset>= 360 & noun_onset <= 3000)%>%
+  group_by(recording_name, subject_id, trial_number, media_name, age_centered,exp_centered)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total) 
+```
+
+
+###----Building 3 GAMs (can't buid accumulator)---------##
+```{r}
+#age as a smooth (non-linear) effect. No interaction effect
+gam1<- gamm4(prop_looking ~ s(age_centered), data = for_lmm, random=~((1|media_name)+ (1|subject_id)))
+summary(gam1$gam)
+summary(gam1$mer)
+
+#Experience as a smooth (non-linear) effect. No interaction effect
+gam2<- gamm4(prop_looking ~ s(exp_centered), data = for_lmm, random=~((1|media_name)+ (1|subject_id)))
+summary(gam2$gam)
+summary(gam2$mer)
+
+#Addition of age and experience as smooth effects
+gam3<- gamm4(prop_looking ~ s(exp_centered) + s(age_centered), data = for_lmm, random=~((1|media_name)+ (1|subject_id)))
+summary(gam3$gam)
+summary(gam3$mer)
+```
+
+###-----Building result tables for GAMs-------##
+```{r}
+##Age tables
+age_gam<- tidy(gam1$gam)
+age_mer<- tidy(gam1$mer)
+
+age_gam <-  age_gam %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/age_gam.csv")
+
+age_mer <-  age_mer %>% as.data.frame() %>%
+  write_csv(file = "supplementary_tables/age_mer.csv")
+
+##Experience tables
+exp_gam<- tidy(gam2$gam)
+exp_mer<- tidy(gam2$mer)
+
+exp_gam <-  exp_gam %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/exp_gam.csv")
+
+exp_mer <-  exp_mer %>% as.data.frame() %>%
+  write_csv(file = "supplementary_tables/exp_mer.csv")
+
+## Additive tables
+additive_gam<- tidy(gam3$gam)
+additive_mer<- tidy(gam3$mer)
+
+additive_gam <-  additive_gam %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/additive_gam.csv")
+
+additive_mer <-  additive_mer %>% as.data.frame() %>%
+  write_csv(file = "supplementary_tables/additive_mer.csv")
+
+```
+
+##c) Logistic Mixed Effect Models (GLMER)
+###----Building 4 GLMERs---##
+```{r}
+logi_age <- glmer(prop_looking ~ age_centered  + (1|subject_id) + (1|media_name), data = for_lmm, family="binomial", control=glmerControl(optimizer = "bobyqa"))
+summary(logi_age)
+
+logi_exp <- glmer(prop_looking ~ exp_centered  + (1|subject_id) + (1|media_name), data = for_lmm, family="binomial", control=glmerControl(optimizer = "bobyqa"))
+
+logi_additive <- glmer(prop_looking ~ exp_centered  + age_centered + (1|subject_id) + (1|media_name), data = for_lmm, family="binomial", control=glmerControl(optimizer = "bobyqa"))
+
+logi_accumulator <- glmer(prop_looking ~ exp_centered*age_centered + (1|subject_id) + (1|media_name), data = for_lmm, family="binomial", control=glmerControl(optimizer = "bobyqa"))
+```
+
+##-----Building result tables for 4 GLMERs------------##
+```{r}
+age_logi<- tidy(logi_age)
+
+age_logi <-  age_logi %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/glmer_age.csv")
+
+exp_logi<- tidy(logi_exp)
+
+exp_logi <-  exp_logi %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/glmer_exp.csv")
+
+add_logi<- tidy(logi_additive)
+
+add_logi <-  add_logi %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/glmer_add.csv")
+
+acc_logi<- tidy(logi_accumulator)
+
+acc_logi <-  acc_logi %>% as.data.frame() %>%
+  mutate (p.value = format_value(p.value, "p")) %>%
+  write_csv(file = "supplementary_tables/glmer_acc.csv")
+
+```
+
+##--------- Running linear mixed models with data from trilinguals included---------##
+```{r}
+load(here("merged_data_sets/arch_final_triling.Rda"))
+
+arch_re_zero_t<- arch_final_triling%>%
+  group_by(studio_project_name, studio_test_name, trial_number, recording_name)%>%
+  mutate(trial_from_zero = recording_timestamp-min(recording_timestamp))%>%
+  group_by(studio_project_name)%>%
+  mutate(noun_onset = case_when(studio_project_name=="CompMix-36"~trial_from_zero-3000,
+                                studio_project_name=="LearnMix-36"~trial_from_zero-4500,
+                                studio_project_name=="Mix-20"~trial_from_zero-5400,
+                                studio_project_name=="Mix-14"~trial_from_zero-5400,
+                                studio_project_name=="CogMisp-24"~trial_from_zero-1500))%>%
+  ungroup()%>%
+  rename(target_side=target, distractor_side=distractor,
+         gaze_point_x= gaze_point_x_adc_spx, 
+         gaze_point_y = gaze_point_y_adc_spx)%>%
+  filter(gaze_point_x>=0 & gaze_point_x<= 1920)%>% #keeps only observations that are in the screen
+  filter(gaze_point_y>=0 & gaze_point_y<=1200)%>%
+  filter(!is.na(gaze_point_x))%>% #gets rid of the observations where tobii didn't get any reading
+  filter(!is.na(gaze_point_y))%>%
+  filter(!is.na(validity_left)) %>%
+  filter(!is.na(validity_right)) %>%
+  filter(validity_left<= 1)%>%
+  filter(validity_right <= 1)%>%
+  mutate(target = case_when(gaze_point_x >= target_x_min&gaze_point_x <= target_x_max&gaze_point_y >= target_y_min&gaze_point_y <= target_y_max~TRUE, 
+                            TRUE~FALSE))
+
+
+arch_re_zero_t <- arch_re_zero_t%>%
+  ungroup()%>%
+  group_by(studio_test_name, eng_exp, fre_exp)%>%
+  mutate(trial_lang = case_when(str_detect(studio_test_name,"E")~ "english",
+                                str_detect(studio_test_name, "F")~ "french"))
+
+arch_re_zero_t<- arch_re_zero_t%>%
+  mutate(exp_to_target_lang = case_when(trial_lang == "english" ~ eng_exp,
+                                        trial_lang == "french" ~ fre_exp)) %>%
+  mutate(exp_target_lang_prop = exp_to_target_lang/100)
+
+#mean(arch_re_zero$age_months)#25.79
+#mean(arch_re_zero$exp_target_lang_prop) #0.57
+
+ arch_re_zero_t_c<- arch_re_zero_t %>%
+  mutate(age_centered = age_months-25) %>%
+   mutate(exp_centered =exp_target_lang_prop - .50)
+ 
+ for_lmm_t <- arch_re_zero_t_c
+
+for_lmm_t <- for_lmm_t %>%
+  filter(noun_onset>= 360 & noun_onset <= 3000)%>%
+  group_by(recording_name, subject_id, trial_number, media_name, age_centered,exp_centered)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total) 
+
+#1) Maturation only
+lmm_age_only_t <- lmer (prop_looking ~ age_centered + (1|subject_id) + (1|media_name), data = for_lmm_t)
+summary(lmm_age_only_t)
+#2) Experience only
+lmm_experience_only_t <- lmer (prop_looking ~ exp_centered + (1|subject_id) + (1|media_name), data = for_lmm_t)
+summary(lmm_experience_only_t)
+#3)Accumulator model
+lmm_accumulator_t <- lmer (prop_looking ~ exp_centered * age_centered + (1|subject_id) + (1|media_name), data = for_lmm_t)
+summary(lmm_accumulator_t)
+#4) Additive Model
+lmm_aditive_t <- lmer (prop_looking ~ exp_centered + age_centered + (1|subject_id) + (1|media_name), data = for_lmm_t)
+summary(lmm_aditive_t) #<- SELECTED MODEL
+
+
+```
+
+##--------- Running linear mixed models with exclusion criteria changed from hearing testing language for half their age to haring testing language for at least 6 months ---------##
+```{r}
+load(here("merged_data_sets/arch_final_6m.Rda"))
+
+arch_re_zero_6m<- arch_final_6m %>%
+  group_by(studio_project_name, studio_test_name, trial_number, recording_name)%>%
+  mutate(trial_from_zero = recording_timestamp-min(recording_timestamp))%>%
+  group_by(studio_project_name)%>%
+  mutate(noun_onset = case_when(studio_project_name=="CompMix-36"~trial_from_zero-3000,
+                                studio_project_name=="LearnMix-36"~trial_from_zero-4500,
+                                studio_project_name=="Mix-20"~trial_from_zero-5400,
+                                studio_project_name=="Mix-14"~trial_from_zero-5400,
+                                studio_project_name=="CogMisp-24"~trial_from_zero-1500))%>%
+  ungroup()%>%
+  rename(target_side=target, distractor_side=distractor,
+         gaze_point_x= gaze_point_x_adc_spx, 
+         gaze_point_y = gaze_point_y_adc_spx)%>%
+  filter(gaze_point_x>=0 & gaze_point_x<= 1920)%>% #keeps only observations that are in the screen
+  filter(gaze_point_y>=0 & gaze_point_y<=1200)%>%
+  filter(!is.na(gaze_point_x))%>% #gets rid of the observations where tobii didn't get any reading
+  filter(!is.na(gaze_point_y))%>%
+  filter(!is.na(validity_left)) %>%
+  filter(!is.na(validity_right)) %>%
+  filter(validity_left<= 1)%>%
+  filter(validity_right <= 1)%>%
+  mutate(target = case_when(gaze_point_x >= target_x_min&gaze_point_x <= target_x_max&gaze_point_y >= target_y_min&gaze_point_y <= target_y_max~TRUE, 
+                            TRUE~FALSE))
+
+
+arch_re_zero_6m <- arch_re_zero_6m %>%
+  ungroup()%>%
+  group_by(studio_test_name, eng_exp, fre_exp)%>%
+  mutate(trial_lang = case_when(str_detect(studio_test_name,"E")~ "english",
+                                str_detect(studio_test_name, "F")~ "french"))
+
+arch_re_zero_6m<- arch_re_zero_6m %>%
+  mutate(exp_to_target_lang = case_when(trial_lang == "english" ~ eng_exp,
+                                        trial_lang == "french" ~ fre_exp)) %>%
+  mutate(exp_target_lang_prop = exp_to_target_lang/100)
+
+#mean(arch_re_zero$age_months)#25.79
+#mean(arch_re_zero$exp_target_lang_prop) #0.57
+
+ arch_re_zero_6m_c<- arch_re_zero_6m %>%
+  mutate(age_centered = age_months-25) %>%
+   mutate(exp_centered =exp_target_lang_prop - .50)
+ 
+ for_lmm_6m <- arch_re_zero_6m_c
+
+for_lmm_6m <- for_lmm_6m %>%
+  filter(noun_onset>= 360 & noun_onset <= 3000)%>%
+  group_by(recording_name, subject_id, trial_number, media_name, age_centered,exp_centered)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total) 
+
+#1) Maturation only
+lmm_age_only_6m <- lmer (prop_looking ~ age_centered + (1|subject_id) + (1|media_name), data = for_lmm_6m)
+summary(lmm_age_only_6m)
+#2) Experience only
+lmm_experience_only_6m <- lmer (prop_looking ~ exp_centered + (1|subject_id) + (1|media_name), data = for_lmm_6m)
+summary(lmm_experience_only_6m)
+#3)Accumulator model
+lmm_accumulator_6m <- lmer (prop_looking ~ exp_centered * age_centered + (1|subject_id) + (1|media_name), data = for_lmm_6m)
+summary(lmm_accumulator_6m)
+#4) Additive Model
+lmm_aditive_6m <- lmer (prop_looking ~ exp_centered + age_centered + (1|subject_id) + (1|media_name), data = for_lmm_6m)
+summary(lmm_aditive_6m) #<- SELECTED MODEL
+
+
+```
+```{r}
+##Calculate the amount of monolinguals under a strict definition
+
+monoling_f <- arch_re_zero %>%
+  filter(trial_lang=="french") %>%
+  filter(fre_exp >90)
+
+m_f<- unique(monoling_f$recording_name) #2
+
+
+monoling_e <- arch_re_zero %>%
+  filter(trial_lang=="english") %>%
+  filter(eng_exp >90)
+
+m_e<- unique(monoling_e$recording_name) #23
+```
+```{r}
+##Create alternative LMM with age of acquisition as a predictor
+library(wordbankr)
+
+#english items
+eng_items_compmix <- arch_re_zero %>%
+  filter(trial_lang =="english") %>%
+  filter(studio_project_name=="CompMix-36") %>%
+  separate(media_name, into = c("item", "2", "3"), sep="_")
+
+eng_compmix<- unique(eng_items_compmix$item)
+
+
+
+eng_cdi_ws<- get_item_data(language = "English (American)", form = "WS") %>%
+  filter(item_definition = c(""))
+
+
+```
+
+
+```{r}
+arch_items <- arch_re_zero %>%
+  filter(trial_lang =="english")%>%
+mutate(item = case_when(str_detect(media_name, "Ear")~"ear",
+                        str_detect(media_name, "Apple")~"apple",
+                        str_detect(media_name, "Fish")~"fish",
+                        str_detect(media_name, "Dog")~"dog",
+                        str_detect(media_name, "Spoon")~"spoon",
+                        str_detect(media_name, "Hand")~"hand",
+                        str_detect(media_name, "Toothbrush")~"Toothbrush",
+                        str_detect(media_name, "Froggy")~"ear",
+                        str_detect(media_name, "Ear")~"ear")) 
+```
+

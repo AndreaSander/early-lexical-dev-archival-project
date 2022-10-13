@@ -1,0 +1,5 @@
+"0","arch_re_zero <- arch_re_zero%>%"
+"0","  ungroup()%>%"
+"0","  group_by(studio_test_name, eng_exp, fre_exp)%>%"
+"0","  mutate(trial_lang = case_when(str_detect(studio_test_name,""E"")~ ""english"","
+"0","                                str_detect(studio_test_name, ""F"")~ ""french""))"
