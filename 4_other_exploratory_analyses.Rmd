@@ -403,4 +403,20 @@ summary(lmm_aditive_6m) #<- SELECTED MODEL
 
 
 ```
+```{r}
+##Calculate the amount of monolinguals under a strict definition
+
+monoling_f <- arch_re_zero %>%
+  filter(trial_lang=="french") %>%
+  filter(fre_exp >90)
+
+m_f<- unique(monoling_f$recording_name) #2
+
+
+monoling_e <- arch_re_zero %>%
+  filter(trial_lang=="english") %>%
+  filter(eng_exp >90)
+
+m_e<- unique(monoling_e$recording_name) #23
+```
 

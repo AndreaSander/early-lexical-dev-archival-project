@@ -1,0 +1,8 @@
+"0","monoling_e <- arch_re_zero %>%
+  filter(trial_lang==""english"") %>%
+  filter(eng_exp >90)
+"
+"2","filter (grouped): removed 198,877 rows (33%), 412,014 rows remaining
+"
+"2","filter (grouped): removed 348,942 rows (85%), 63,072 rows remaining
+"
