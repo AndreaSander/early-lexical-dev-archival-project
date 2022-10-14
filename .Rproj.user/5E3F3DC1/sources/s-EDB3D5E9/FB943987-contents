@@ -428,7 +428,7 @@ library(janitor)
 items <- arch_re_zero %>%
   filter(studio_project_name !="CogMisp-24")%>%
    filter(studio_project_name !="LearnMix-36")%>%
-distinct(media_name, studio_project_name) %>%
+distinct(media_name, studio_project_name, age_months, trial_lang) %>%
     mutate(media_name = case_when(str_detect(media_name, "Dog|Chien")~"dog",
                           str_detect(media_name, "Cookie|Biscuit")~ "cookie",
                           str_detect(media_name, "Apple|Pomme")~"apple",
@@ -448,7 +448,7 @@ distinct(media_name, studio_project_name) %>%
 
 items_learnmix <- arch_re_zero %>%
   filter(studio_project_name== "LearnMix-36") %>%
-distinct(media_name, studio_project_name) %>%
+distinct(media_name, studio_project_name, age_months, trial_lang) %>%
   mutate(media_name = str_remove(media_name, "FR")) %>%
   mutate(media_name = str_remove(media_name, "Single")) %>%
   mutate(media_name = str_remove(media_name, "EN")) %>%
@@ -461,7 +461,7 @@ distinct(media_name, studio_project_name) %>%
 
 items_cogmisp <- arch_re_zero %>%
   filter(studio_project_name== "CogMisp-24") %>%
-distinct(media_name, studio_project_name) %>%
+distinct(media_name, studio_project_name, age_months, trial_lang) %>%
   separate(media_name, into = c("1", "2", "item", "4"), sep="_", remove=F)%>%
  select (-c("1", "2", "4")) %>%
   mutate(item = case_when(str_detect(item, "banC")~"banana",
@@ -479,7 +479,9 @@ distinct(media_name, studio_project_name) %>%
 
 #Create combined list of items from all studies
 arch_items <- rbind(items,items_learnmix,items_cogmisp) %>%
-  select (-media_name) 
+  select (-media_name) %>%
+  mutate(item = tolower(item)) 
+ arch_items$item[arch_items$item== "froggy"] <- "frog" 
 
 
 
@@ -497,8 +499,25 @@ admin_by_item_eng<- get_instrument_data(
   item_info = T)
 
 eng_items_aoa<- fit_aoa(admin_by_item_eng)
+
+eng_items_aoa <- eng_items_aoa %>%
+  mutate(item = item_definition)
+
+eng_items_aoa$item[eng_items_aoa$item=="fish(animal"]<- "fish"
+
+arch_eng_items_aoa <- left_join(eng_items_aoa, arch_items, by="item") %>%
+  filter(trial_lang =="english")
+
+ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa, colour=as.character(item)))+
+  geom_point() 
+
+  
+
+
+
+
+```{r}
 ```
 
 
 ```{r}
-
