@@ -521,3 +521,30 @@ ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa, colour=as.character(item)))+
 
 
 ```{r}
+## testing our models but adding testing language as a fixed effect
+
+for_lmm_L <- arch_re_zero_c
+
+for_lmm_L <- for_lmm_L %>%
+  filter(noun_onset>= 360 & noun_onset <= 3000)%>%
+  group_by(recording_name, subject_id, trial_number, media_name, age_centered,exp_centered, trial_lang)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total) 
+
+#1) Maturation only
+lmm_age_only_L <- lmer (prop_looking ~ age_centered + trial_lang + (1|subject_id) + (1|media_name), data = for_lmm_L)
+summary(lmm_age_only_L)
+#2) Experience only
+lmm_experience_only_L <- lmer (prop_looking ~ exp_centered + trial_lang + (1|subject_id) + (1|media_name), data = for_lmm_L)
+summary(lmm_experience_only_L)
+#3)Accumulator model
+lmm_accumulator_L <- lmer (prop_looking ~ exp_centered * age_centered + trial_lang + (1|subject_id) + (1|media_name), data = for_lmm_L)
+summary(lmm_accumulator_L)
+#4) Additive Model
+lmm_aditive_L <- lmer (prop_looking ~ exp_centered + age_centered + trial_lang + (1|subject_id) + (1|media_name), data = for_lmm_L)
+summary(lmm_aditive_L) #<- SELECTED MODEL
+```
+
+
+```{r}
