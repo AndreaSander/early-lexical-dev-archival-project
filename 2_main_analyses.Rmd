@@ -139,7 +139,7 @@ cor(predict(lmm_aditive), for_lmm$prop_looking)^2 #aditive =.244
 
 ```
 
-##-------------------LMM model evaluation-------------------------------------##
+##-------------------LMM aditive model evaluation-------------------------------------##
 ```{r}
 res_simulation  <- simulateResiduals(fittedModel = lmm_aditive , plot = T)
 
@@ -174,6 +174,17 @@ lm.beta.lmer(lmm_aditive)
 lm.beta.lmer(lmm_accumulator)
 s_lm.beta.lmer(lmm_age_only)
 s_lm.beta.lmer(lmm_experience_only)
+
+```
+##-------------------LMM model evaluation for the rest of the models-------------------------------------##
+```{r}
+
+
+
+check_model(lmm_age_only, panel=F)
+check_model(lmm_experience_only, panel=F)
+check_model(lmm_accumulator, panel=F)
+check_model(lmm_aditive, panel=F)
 
 ```
 
