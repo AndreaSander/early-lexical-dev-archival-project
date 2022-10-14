@@ -422,35 +422,83 @@ m_e<- unique(monoling_e$recording_name) #23
 ```{r}
 ##Create alternative LMM with age of acquisition as a predictor
 library(wordbankr)
+library(janitor)
 
-#english items
-eng_items_compmix <- arch_re_zero %>%
-  filter(trial_lang =="english") %>%
-  filter(studio_project_name=="CompMix-36") %>%
-  separate(media_name, into = c("item", "2", "3"), sep="_")
+#Retrieve items from media names
+items <- arch_re_zero %>%
+  filter(studio_project_name !="CogMisp-24")%>%
+   filter(studio_project_name !="LearnMix-36")%>%
+distinct(media_name, studio_project_name) %>%
+    mutate(media_name = case_when(str_detect(media_name, "Dog|Chien")~"dog",
+                          str_detect(media_name, "Cookie|Biscuit")~ "cookie",
+                          str_detect(media_name, "Apple|Pomme")~"apple",
+                          str_detect(media_name, "Spoon|Cuillere")~"spoon",
+                           str_detect(media_name, "Book|Livre")~"book",
+                           str_detect(media_name, "Hand|Main")~"hand",
+                           str_detect(media_name, "Ear|Oreille")~"ear",
+                           str_detect(media_name, "Mouth|Bouche")~"mouth",
+                           str_detect(media_name, "Foot|Pied")~"foot",
+                           str_detect(media_name, "Toothbrush|Brosse")~"toothbrush",
+                           str_detect(media_name, "Door|Porte")~"door",
+                           str_detect(media_name, "Bird")~"bird",
+                          TRUE~media_name)) %>%
+  separate(media_name, into = c("item", "2", "3"), sep="_", remove=F) %>%
+  select (-c("2", "3")) 
 
-eng_compmix<- unique(eng_items_compmix$item)
+
+items_learnmix <- arch_re_zero %>%
+  filter(studio_project_name== "LearnMix-36") %>%
+distinct(media_name, studio_project_name) %>%
+  mutate(media_name = str_remove(media_name, "FR")) %>%
+  mutate(media_name = str_remove(media_name, "Single")) %>%
+  mutate(media_name = str_remove(media_name, "EN")) %>%
+  separate(media_name, into = c("1", "2", "item"), sep="_", remove=F) %>%
+  select (-c("1", "2")) %>%
+  mutate(item = case_when(str_detect(item, "Chien|Dog")~"dog",
+                          str_detect(item, "Lapin|Bunny")~ "bunny",
+                          str_detect(item, "Poisson|Fish")~"fish"))
+
+
+items_cogmisp <- arch_re_zero %>%
+  filter(studio_project_name== "CogMisp-24") %>%
+distinct(media_name, studio_project_name) %>%
+  separate(media_name, into = c("1", "2", "item", "4"), sep="_", remove=F)%>%
+ select (-c("1", "2", "4")) %>%
+  mutate(item = case_when(str_detect(item, "banC")~"banana",
+                          str_detect(item, "bowC")~ "bowl",
+                          str_detect(item, "mouC")~"mouth",
+                          str_detect(item, "girC")~"giraffe",
+                          str_detect(item, "cooC")~"cookie",
+                          str_detect(item, "pizC")~"pizza",
+                          str_detect(item, "winC")~"window",
+                          str_detect(item, "butC")~"butterfly",
+                          str_detect(item, "choC")~"chocolate",
+                          str_detect(item, "tabC")~"table",
+                          str_detect(item, "fooC")~"foot",
+                          str_detect(item, "monC")~"monkey"))
+
+#Create combined list of items from all studies
+arch_items <- rbind(items,items_learnmix,items_cogmisp) %>%
+  select (-media_name) 
 
 
 
-eng_cdi_ws<- get_item_data(language = "English (American)", form = "WS") %>%
-  filter(item_definition = c(""))
+ english_items<- get_item_data("English (American)", "WS") %>%
+   filter(str_detect(uni_lemma, "ear|apple|fish|dog|spoon|hand|sheep|toothbrush|frog|door|pencil|bunny|coat|monkey|duck|cow|cookie|book|mouth|bird|foot|bunny|banana|bowl|giraffe|pizza|window|butterfly|chocolate|table")) %>%
+     filter(!str_detect(uni_lemma, "bear|applesauce|tear|hear|cowboy|food")) 
+ 
+ item_id_eng <- english_items$item_id
 
+admin_by_item_eng<- get_instrument_data(
+  language = "English (American)",
+  form = "WS",
+  items = item_id_eng,
+  administration_info = T,
+  item_info = T)
 
+eng_items_aoa<- fit_aoa(admin_by_item_eng)
 ```
 
 
 ```{r}
-arch_items <- arch_re_zero %>%
-  filter(trial_lang =="english")%>%
-mutate(item = case_when(str_detect(media_name, "Ear")~"ear",
-                        str_detect(media_name, "Apple")~"apple",
-                        str_detect(media_name, "Fish")~"fish",
-                        str_detect(media_name, "Dog")~"dog",
-                        str_detect(media_name, "Spoon")~"spoon",
-                        str_detect(media_name, "Hand")~"hand",
-                        str_detect(media_name, "Toothbrush")~"Toothbrush",
-                        str_detect(media_name, "Froggy")~"ear",
-                        str_detect(media_name, "Ear")~"ear")) 
-```
 
