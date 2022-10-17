@@ -274,6 +274,12 @@ setdiff(AOI$media_name, arch_comp_data$media_name) #0 no differences
 setdiff(arch_comp_data$media_name, AOI$media_name)# The differences are 1) attention getters, 2) test trials from the "learn" experiment, for which we are only interested in the learning phase
 
 arch_aoi_data <- left_join(arch_comp_data, AOI, by = c("studio_project_name", "trial_number", "media_name", "studio_test_name"))
+
+#calculate amount of trials pre-exclusions
+trial_n <- arch_aoi_data %>%
+  distinct(recording_name, trial_number,.keep_all = F)
+#4860 trials before exclusions
+
 ```
 
 ### Create final dataset  
