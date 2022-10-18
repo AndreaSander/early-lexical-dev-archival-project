@@ -508,8 +508,10 @@ eng_items_aoa$item[eng_items_aoa$item=="fish(animal"]<- "fish"
 arch_eng_items_aoa <- left_join(eng_items_aoa, arch_items, by="item") %>%
   filter(trial_lang =="english")
 
-ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa, colour=as.character(item)))+
-  geom_point() 
+ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa))+
+  #geom_point(aes(color = as.factor(item))) +
+  geom_point(aes(color = studio_project_name)) +
+  geom_smooth(aes(color = studio_project_name))
 
   
 
