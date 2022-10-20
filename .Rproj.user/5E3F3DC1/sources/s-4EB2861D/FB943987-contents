@@ -419,8 +419,10 @@ monoling_e <- arch_re_zero %>%
 
 m_e<- unique(monoling_e$recording_name) #23
 ```
+
+
+#-------- calculate AOA of items ---------------
 ```{r}
-##Create alternative LMM with age of acquisition as a predictor
 library(wordbankr)
 library(janitor)
 
@@ -484,6 +486,7 @@ arch_items <- rbind(items,items_learnmix,items_cogmisp) %>%
  arch_items$item[arch_items$item== "froggy"] <- "frog" 
 
 
+ #----------------------- ENGLISH ITEMS AOA ---------------------------#
 
  english_items<- get_item_data("English (American)", "WS") %>%
    filter(str_detect(uni_lemma, "ear|apple|fish|dog|spoon|hand|sheep|toothbrush|frog|door|pencil|bunny|coat|monkey|duck|cow|cookie|book|mouth|bird|foot|bunny|banana|bowl|giraffe|pizza|window|butterfly|chocolate|table")) %>%
@@ -491,10 +494,10 @@ arch_items <- rbind(items,items_learnmix,items_cogmisp) %>%
  
  item_id_eng <- english_items$item_id
 
-admin_by_item_eng<- get_instrument_data(
-  language = "English (American)",
+admin_by_item_eng<- get_instrument_data (
+  language = c("English (American)"),
   form = "WS",
-  items = item_id_eng,
+  items = all_of(item_id_eng),
   administration_info = T,
   item_info = T)
 
@@ -503,20 +506,62 @@ eng_items_aoa<- fit_aoa(admin_by_item_eng)
 eng_items_aoa <- eng_items_aoa %>%
   mutate(item = item_definition)
 
-eng_items_aoa$item[eng_items_aoa$item=="fish(animal"]<- "fish"
+eng_items_aoa$item[eng_items_aoa$item=="fish(animal)"]<- "fish"
 
 arch_eng_items_aoa <- left_join(eng_items_aoa, arch_items, by="item") %>%
   filter(trial_lang =="english")
 
-ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa, colour=as.character(item)))+
-  geom_point() 
+#-------------- FRENCH ITEMS AOA ------------------------#
+
+
+ french_items<- get_item_data("French (Quebecois)", "WS") %>%
+   filter(str_detect(uni_lemma, "ear|apple|fish|dog|spoon|hand|sheep|toothbrush|frog|door|pencil|bunny|coat|monkey|duck|cow|cookie|book|mouth|bird|foot|bunny|banana|bowl|giraffe|pizza|window|butterfly|chocolate|table")) %>%
+     filter(!str_detect(uni_lemma, "bear|applesauce|tear|hear|cowboy|food")) 
+ 
+ item_id_fre <- french_items$item_id
+
+admin_by_item_fre<- get_instrument_data (
+  language = c("French (Quebecois)"),
+  form = "WS",
+  items = all_of(item_id_fre),
+  administration_info = T,
+  item_info = T)
+
+fre_items_aoa<- fit_aoa(admin_by_item_fre)
+
+fre_items_aoa <- fre_items_aoa %>%
+  mutate(item = uni_lemma) 
+
+fre_items_aoa$item[fre_items_aoa$item=="fish(animal)"]<- "fish"
+
+arch_fre_items_aoa <- left_join(fre_items_aoa, arch_items, by="item") %>%
+    filter(trial_lang =="french") %>%
+  mutate(item = paste(item, "fre", sep="_"))
+
+
+ 
+#--------------------- CALCULATE MEAN AOA BY STUDY AND MEAN AGE BY STUDY----------#
+arch_all_items_aoa <- rbind(arch_eng_items_aoa, arch_fre_items_aoa) #combine french and english AOA information
+
+mean_aoa_by_study<- arch_all_items_aoa %>%
+  group_by(studio_project_name) %>%
+  summarise(mean(aoa, na.rm=T))
+
+
+mean_age_by_study <- arch_all_items_aoa %>%
+  group_by(studio_project_name) %>%
+  summarise(mean(age_months))
+
+mean_age_and_aoa <- left_join(mean_aoa_by_study, mean_age_by_study, by="studio_project_name")
+#------------------- PLOT ----------------#
+
+ggplot(arch_eng_items_aoa, aes(x=age_months, y=aoa))+
+  #geom_point(aes(color = as.factor(item))) +
+  geom_point(aes(color = studio_project_name)) +
+  geom_smooth(aes(color = studio_project_name))
 
   
 
-
-
-
-```{r}
 ```
 
 
