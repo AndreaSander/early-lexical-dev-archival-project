@@ -138,7 +138,7 @@ tc%>%
   labs(x="Time from noun onset (ms)", 
        y= "Proportion looking to target")+
   ggtitle("Time series of infant looking by age group divided by experience")+
-  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#d7301f", "#7f0000"))+
+  scale_color_manual(name= "Exposure bins (percentage range)", values = c("#feb24c", "#d7301f", "#7f0000"))+
   theme_bw()+
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
         plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
