@@ -102,7 +102,7 @@ lmm_viz_aditive <- lmer (prop_looking ~ exp_target_lang_prop + age_months + (1|s
 x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
            legend.title = "Exposure bins (percentage range)", title = "Predicted values of looking accuracy for the additive model")
 
-
+#changing the legend levels to ra-name the groups in a more appropriate way
 x$data$group_col<- as.character(x$data$group_col)
 x$data$group_col<- factor(x$data$group_col)
 levels(x$data$group_col)<- c("0-39", "40-65", "66-100")
@@ -118,7 +118,7 @@ x + theme_bw() +
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
 
-#ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
+ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
 ```
 
 ##----Time course plots----##
@@ -206,51 +206,26 @@ count_exp_age<- tc %>%
 
 ```
 
-
+##----- plotting raw data with predicted data----##
 ```{r}
-#Plotting real data with predicted data
-library(magick)
-x.2 <- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"), title="")
+#Plotting raw data with predicted data
+
+y<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
+           legend.title = "Exposure bins (percentage range)", title = "Predicted values of looking accuracy for the additive model", show.data =  T)
 
 
- x.2 + theme_bw() +
+y + theme_bw() +
+  xlab("Age (months)")+
+  ylab("Proportion looking to target")+
   ylim(0.4, 1.0)+
   xlim(14, 48)+
   geom_hline(yintercept = 0.5 , linetype = "dashed")+
   annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
   guides (col= guide_legend(reverse= TRUE))+
-  theme(legend.position="none", axis.text = element_text(size = 30))  
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
- 
- ggsave("predicted_values_layer2.png", dpi = "print", width = 16, height = 8, units = "in")
 
-real <- for_lmm_viz %>%
-  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.25 ~".25",
-                              exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
-                              exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
-                              exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))
- real%>%
-  group_by(age_months,exp_bins, prop_looking)%>%
-  ggplot(aes(x=age_months, y=prop_looking, color=exp_bins))+
-  geom_point()+
-  scale_y_continuous(limits = c(0,1))+
-  labs(x="", 
-       y= "")+
-  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
-  theme_bw()+
-     ylim(0.4, 1.0)+
-  xlim(14, 48)+
-  theme(legend.position = "none", 
-  axis.text = element_text(size = 30), strip.text.x = element_text(size = 30)) 
-
- ggsave("real_values_layer2.png", dpi = "print", width = 16, height = 8, units = "in")
- 
-
-plot_3<- image_read("predicted_values_layer2.png")
-plot_4<- image_read("real_values_layer2.png")
-both2 <- image_scale(c(plot_3, plot_4), "1200")
-
-image_average(both2)
+ggsave("real_and_predicted_values.png", dpi = "print", width = 16, height = 8, units = "in")
 
 
 ```
