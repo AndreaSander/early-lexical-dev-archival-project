@@ -99,13 +99,13 @@ lmm_viz_aditive <- lmer (prop_looking ~ exp_target_lang_prop + age_months + (1|s
 ##---Additive model predicted values visualization----##
 ```{r}
 #using plot_model from sjplot in brackets added the values in which to predict effects so that the function does not extrapolate.
-x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
+x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.70, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
            legend.title = "Exposure bins (percentage range)", title = "Predicted values of looking accuracy for the additive model")
 
 #changing the legend levels to ra-name the groups in a more appropriate way
 x$data$group_col<- as.character(x$data$group_col)
 x$data$group_col<- factor(x$data$group_col)
-levels(x$data$group_col)<- c("0-39", "40-65", "66-100")
+levels(x$data$group_col)<- c("10-39", "40-70", "71-100")
 
 x + theme_bw() +
   xlab("Age (months)")+
@@ -124,16 +124,18 @@ ggsave("predicted_values.png", dpi = "print", width = 16, height = 8, units = "i
 ##----Time course plots----##
 ```{r}
 tc <- arch_re_zero%>%
-  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.39 ~"0-39",
-                              exp_target_lang_prop >= .40 & exp_target_lang_prop <=.65 ~"40-65",
-                              exp_target_lang_prop >=.66 & exp_target_lang_prop <=1 ~"66-100")) %>%
+  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.39 ~"10-39",
+                              exp_target_lang_prop >= .40 & exp_target_lang_prop <=.70 ~"40-70",
+                              exp_target_lang_prop >=.71 & exp_target_lang_prop <=1 ~"71-100")) %>%
   mutate(age_bins= case_when(age_months >=14 & age_months<=20.9~"14-20 (m)",
                              age_months >=21 & age_months<=30.9~"21-30 (m)",
                              age_months>=31 & age_months<=48.9~"31-48 (m)"))
-tc%>%
+tc_graph <- tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
   group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
-  summarise(looking=mean(target, na.rm=T))%>%
+  summarise(looking=mean(target, na.rm=T))
+
+tc_graph %>%
   ggplot(aes(x=interval, y=looking, color=exp_bins))+
   geom_line(size=1)+
   #    stat_summary(aes(y = looking), fun.y=mean, colour="black", geom="line", size=0.8, alpha=0.5)+
@@ -184,8 +186,8 @@ pm<- m %>%
   theme_bw()
 
 marginal<- ggMarginal(pm, type="histogram", aes(y=after_stat(count)),
-           xparams = list(binwidth = 8.5, fill= "#fc8d59"),
-           yparams = list(binwidth = 25, fill= "#91cf60"))
+           xparams = list(binwidth = 12, fill= "#fc8d59"),
+           yparams = list(binwidth = 30, fill= "#91cf60"))
 print(marginal)
 ggsave("marginal_plot.jpg")
 
@@ -206,7 +208,7 @@ count_exp_age<- tc %>%
 
 ```
 
-##----- plotting raw data with predicted data----##
+##----- Additive model predicted AND raw values visualization----##
 ```{r}
 #Plotting raw data with predicted data
 
@@ -232,7 +234,7 @@ ggsave("real_and_predicted_values.png", dpi = "print", width = 16, height = 8, u
 
 
 ```{r}
-x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
+x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.70, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
            legend.title = "Exposure to target language (proportion)", title = "Predicted values of looking accuracy for the additive model", show.data = T)
 
 
