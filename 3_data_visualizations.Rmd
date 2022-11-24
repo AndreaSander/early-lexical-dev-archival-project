@@ -99,9 +99,13 @@ lmm_viz_aditive <- lmer (prop_looking ~ exp_target_lang_prop + age_months + (1|s
 ##---Additive model predicted values visualization----##
 ```{r}
 #using plot_model from sjplot in brackets added the values in which to predict effects so that the function does not extrapolate.
-x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.75, 0.5, 0.25]"), line.size = 0.8, colors = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"),
-           legend.title = "Exposure to target language (proportion)", title = "Predicted values of looking accuracy for the additive model")
+x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
+           legend.title = "Exposure bins (percentage range)", title = "Predicted values of looking accuracy for the additive model")
 
+
+x$data$group_col<- as.character(x$data$group_col)
+x$data$group_col<- factor(x$data$group_col)
+levels(x$data$group_col)<- c("0-39", "40-65", "66-100")
 
 x + theme_bw() +
   xlab("Age (months)")+
@@ -248,6 +252,24 @@ both2 <- image_scale(c(plot_3, plot_4), "1200")
 
 image_average(both2)
 
+
+```
+
+
+```{r}
+x<- plot_model(lmm_viz_aditive, type="eff", terms = c("age_months[14,20, 26, 32, 38, 44, 48] ", "exp_target_lang_prop[1 , 0.65, 0.39]"), line.size = 0.8, colors = c("#feb24c", "#d7301f", "#7f0000"),
+           legend.title = "Exposure to target language (proportion)", title = "Predicted values of looking accuracy for the additive model", show.data = T)
+
+
+x + theme_bw() +
+  xlab("Age (months)")+
+  ylab("Proportion looking to target")+
+  ylim(0.4, 1.0)+
+  xlim(14, 48)+
+  geom_hline(yintercept = 0.5 , linetype = "dashed")+
+  annotate("text", y=0.53, x=30, label="Chance looking to target", size=8)+
+  guides (col= guide_legend(reverse= TRUE))+
+  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   
 
 ```
 
