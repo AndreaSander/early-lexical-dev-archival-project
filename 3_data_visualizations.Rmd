@@ -120,14 +120,12 @@ x + theme_bw() +
 ##----Time course plots----##
 ```{r}
 tc <- arch_re_zero%>%
-  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.25 ~".25",
-                              exp_target_lang_prop >= .26 & exp_target_lang_prop <=.5 ~".5",
-                              exp_target_lang_prop >=.51 & exp_target_lang_prop <=.75 ~".75",
-                              exp_target_lang_prop >=.76 & exp_target_lang_prop <=1 ~"1"))%>%
+  mutate(exp_bins = case_when(exp_target_lang_prop >= 0.1 & exp_target_lang_prop <=.39 ~"0-39",
+                              exp_target_lang_prop >= .40 & exp_target_lang_prop <=.65 ~"40-65",
+                              exp_target_lang_prop >=.66 & exp_target_lang_prop <=1 ~"66-100")) %>%
   mutate(age_bins= case_when(age_months >=14 & age_months<=20.9~"14-20 (m)",
-                             age_months >=21 & age_months<=28.9~"21-28 (m)",
-                             age_months >=29 & age_months<=36.9~"29-36 (m)",
-                             age_months>=37 & age_months<=48.9~"37-48 (m)"))
+                             age_months >=21 & age_months<=30.9~"21-30 (m)",
+                             age_months>=31 & age_months<=48.9~"31-48 (m)"))
 tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
   group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
@@ -140,7 +138,7 @@ tc%>%
   labs(x="Time from noun onset (ms)", 
        y= "Proportion looking to target")+
   ggtitle("Time series of infant looking by age group divided by experience")+
-  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
+  scale_color_manual(name= "Exposure bins (proportion)", values = c("#feb24c", "#d7301f", "#7f0000"))+
   theme_bw()+
   theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), 
         plot.title = element_text(size = 30), axis.title = element_text(size = 30), 
@@ -189,8 +187,18 @@ ggsave("marginal_plot.jpg")
 
 ```
 
-
+##---- Counting amount of children per cell in the by experience by age bins ----------##
 ```{r}
+
+count_exp<- tc %>%
+  distinct(recording_name, exp_bins) %>%
+  group_by(exp_bins) %>%
+  tally()
+
+count_exp_age<- tc %>%
+  distinct(recording_name, exp_bins, age_bins) %>%
+  group_by(exp_bins, age_bins) %>%
+  tally()
 
 ```
 
