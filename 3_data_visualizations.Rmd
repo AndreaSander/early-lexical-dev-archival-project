@@ -132,6 +132,12 @@ tc <- arch_re_zero%>%
                              age_months>=31 & age_months<=48.9~"31-48 (m)"))
 tc_graph <- tc%>%
   filter(noun_onset>=360 & noun_onset<=3000)%>%
+  #Filter the only young baby that had usable data after 2800ms as there is no way to average and plot this data
+  mutate(filter_case = case_when(age_bins == "14-20 (m)" & noun_onset > 2800 ~ "TRUE",
+                                 T~"FALSE")) %>%
+  filter(filter_case == "FALSE") %>% 
+
+  #Get the average looking by age bin, experience bin, and time bin.
   group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
   summarise(looking=mean(target, na.rm=T))
 
@@ -151,24 +157,7 @@ tc_graph %>%
         axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
   guides (col= guide_legend(reverse= TRUE))
 
-ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
-
-reversed <- tc%>%
-  filter(noun_onset>=360 & noun_onset<=3000)%>%
-  group_by(age_bins,exp_bins, interval = ifelse(ceiling(noun_onset/100) == 0, 100, ceiling(noun_onset/100)*100))%>%
-  summarise(looking=mean(target, na.rm=T))%>%
-  ggplot(aes(x=interval, y=looking, color=age_bins))+
-  geom_line(size=1)+
-  #    stat_summary(aes(y = looking), fun.y=mean, colour="black", geom="line", size=0.8, alpha=0.5)+
-  facet_grid(~exp_bins)+
-  scale_y_continuous(limits = c(0,1))+
-  labs(x="time from noun onset (ms)", 
-       y= "proportion looking to target")+
-  ggtitle("time series of infant looking by age group divided by experience")+
-  scale_color_manual(values = c("#feb24c", "#ef6548", "#d7301f", "#7f0000"))+
-  theme(legend.text = element_text(size = 15), legend.title = element_text(size = 15), plot.title = element_text(size = 20), axis.title = element_text(size = 18), axis.text = element_text(size = 15)) 
-  theme_bw()+
-  guides (col= guide_legend(reverse= TRUE))
+#ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
 
 ```
 
@@ -185,11 +174,14 @@ pm<- m %>%
   ylab("Experience with target language (%)")+
   theme_bw()
 
+print(pm)
+
+ggsave("scatter_plot.jpg")
 marginal<- ggMarginal(pm, type="histogram", aes(y=after_stat(count)),
            xparams = list(binwidth = 12, fill= "#fc8d59"),
            yparams = list(binwidth = 30, fill= "#91cf60"))
 print(marginal)
-ggsave("marginal_plot.jpg")
+#ggsave("marginal_plot.jpg")
 
 ```
 
