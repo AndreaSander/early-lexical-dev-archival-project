@@ -157,7 +157,7 @@ tc_graph %>%
         axis.text = element_text(size = 22), strip.text.x = element_text(size = 22)) +
   guides (col= guide_legend(reverse= TRUE))
 
-#ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
+ggsave("time_course.png", dpi = "print", width = 16, height = 8, units = "in")
 
 ```
 
@@ -172,6 +172,7 @@ pm<- m %>%
   theme(legend.position="none")+
   xlab("Age(months)") +
   ylab("Experience with target language (%)")+
+    ggtitle("Distribution of participants by experience and age")+
   theme_bw()
 
 print(pm)
