@@ -130,6 +130,12 @@ anova(lmm_aditive, lmm_accumulator)
 anova(lmm_accumulator, lmm_experience_only)
 anova(lmm_accumulator, lmm_age_only)
 
+#another comparison measure
+test_performance(lmm_aditive, lmm_age_only)
+test_performance(lmm_aditive, lmm_accumulator)
+
+#This line calculates AIC, BIC R2 Cond and R2 marg
+compare_performance(lmm_aditive, lmm_accumulator, lmm_age_only, lmm_experience_only)
 
 #to calculate r squared equivalent for lmm based on Sonderegger et al., 2018
 cor(predict(lmm_age_only), for_lmm$prop_looking)^2  # age only= 0.248
@@ -152,7 +158,9 @@ testDispersion(res_simulation)
 testZeroInflation(res_simulation)
 plot(res_simulation, quantreg = T)
 
+
 check_model(lmm_aditive, panel=F)
+model_performance(lmm_aditive)
 ```
 
 ##------------------- LMM standardied coefficient calculation-------------------------------------##
@@ -187,4 +195,5 @@ check_model(lmm_accumulator, panel=F)
 check_model(lmm_aditive, panel=F)
 
 ```
+
 
