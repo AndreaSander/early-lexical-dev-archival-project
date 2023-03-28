@@ -593,3 +593,108 @@ summary(lmm_aditive_L) #<- SELECTED MODEL
 
 
 ```{r}
+## Exploring studies with the same items
+
+
+#Adding item info to arch_re_zero
+items_2 <- arch_re_zero_c %>%
+  filter(studio_project_name !="CogMisp-24")%>%
+   filter(studio_project_name !="LearnMix-36")%>%
+    mutate(media_name = case_when(str_detect(media_name, "Dog|Chien")~"dog",
+                          str_detect(media_name, "Cookie|Biscuit")~ "cookie",
+                          str_detect(media_name, "Apple|Pomme")~"apple",
+                          str_detect(media_name, "Spoon|Cuillere")~"spoon",
+                           str_detect(media_name, "Book|Livre")~"book",
+                           str_detect(media_name, "Hand|Main")~"hand",
+                           str_detect(media_name, "Ear|Oreille")~"ear",
+                           str_detect(media_name, "Mouth|Bouche")~"mouth",
+                           str_detect(media_name, "Foot|Pied")~"foot",
+                           str_detect(media_name, "Toothbrush|Brosse")~"toothbrush",
+                           str_detect(media_name, "Door|Porte")~"door",
+                           str_detect(media_name, "Bird")~"bird",
+                          TRUE~media_name)) %>%
+  separate(media_name, into = c("item", "2", "3"), sep="_", remove=F) %>%
+  select (-c("2", "3")) 
+
+
+items_learnmix_2 <- arch_re_zero_c %>%
+  filter(studio_project_name== "LearnMix-36") %>%
+  mutate(media_name = str_remove(media_name, "FR")) %>%
+  mutate(media_name = str_remove(media_name, "Single")) %>%
+  mutate(media_name = str_remove(media_name, "EN")) %>%
+  separate(media_name, into = c("1", "2", "item"), sep="_", remove=F) %>%
+  select (-c("1", "2")) %>%
+  mutate(item = case_when(str_detect(item, "Chien|Dog")~"dog",
+                          str_detect(item, "Lapin|Bunny")~ "bunny",
+                          str_detect(item, "Poisson|Fish")~"fish"))
+
+
+items_cogmisp_2 <- arch_re_zero_c %>%
+  filter(studio_project_name== "CogMisp-24") %>%
+  separate(media_name, into = c("1", "2", "item", "4"), sep="_", remove=F)%>%
+ select (-c("1", "2", "4")) %>%
+  mutate(item = case_when(str_detect(item, "banC")~"banana",
+                          str_detect(item, "bowC")~ "bowl",
+                          str_detect(item, "mouC")~"mouth",
+                          str_detect(item, "girC")~"giraffe",
+                          str_detect(item, "cooC")~"cookie",
+                          str_detect(item, "pizC")~"pizza",
+                          str_detect(item, "winC")~"window",
+                          str_detect(item, "butC")~"butterfly",
+                          str_detect(item, "choC")~"chocolate",
+                          str_detect(item, "tabC")~"table",
+                          str_detect(item, "fooC")~"foot",
+                          str_detect(item, "monC")~"monkey"))
+
+#Create combined list of items from all studies
+arch_with_items <- rbind(items_2,items_learnmix_2,items_cogmisp_2) %>%
+  select (-media_name) %>%
+  mutate(item = tolower(item)) 
+ arch_with_items$item[arch_with_items$item== "froggy"] <- "frog" 
+
+ #Create a column with by study by item info
+ 
+ arch_with_items <- arch_with_items %>%
+   mutate(study_by_item= paste(item, studio_project_name, sep ="_"))
+ 
+ #Keep a list of items that were used in at least 3/5 studies
+ 
+ list_repeated_items <- c("ear", "apple", "spoon", "hand", "toothbrush", "door", "dog", "cookie", "mouth", "foot")
+ arch_common_items <- arch_with_items %>%
+   filter(item == list_repeated_items)
+ 
+ 
+
+############ linear mixed models keeping only common items ##############
+
+ 
+ for_lmm_common <- arch_common_items
+
+for_lmm_common <- for_lmm_common %>%
+  filter(noun_onset>= 360 & noun_onset <= 3000)%>%
+  group_by(recording_name, subject_id, trial_number, item, age_centered,exp_centered)%>%
+  summarise(samples_total=sum(target==TRUE, target==FALSE ),
+            samples_target=sum(target))%>%
+  mutate(prop_looking= samples_target/samples_total) 
+
+#1) Maturation only
+lmm_age_only_common <- lmer (prop_looking ~ age_centered + (1|subject_id) + (1|item), data = for_lmm_common)
+summary(lmm_age_only_common)
+#2) Experience only
+lmm_experience_only_common <- lmer (prop_looking ~ exp_centered + (1|subject_id) + (1|item), data = for_lmm_common)
+summary(lmm_experience_only_common)
+#3)Accumulator model
+lmm_accumulator_common <- lmer (prop_looking ~ exp_centered * age_centered + (1|subject_id) + (1|item), data = for_lmm_common)
+summary(lmm_accumulator_common)
+#4) Additive Model
+lmm_aditive_common <- lmer (prop_looking ~ exp_centered + age_centered + (1|subject_id) + (1|item), data = for_lmm_common)
+summary(lmm_aditive_common) #<- SELECTED MODEL 
+ 
+#Pattern of results is the same as when we used all items. 
+
+
+
+```
+
+
+```{r}
