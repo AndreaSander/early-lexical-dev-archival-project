@@ -109,16 +109,16 @@ for_lmm <- for_lmm %>%
 ```{r}
 #1) Maturation only
 lmm_age_only <- lmer (prop_looking ~ age_centered + (1|subject_id) + (1|media_name), data = for_lmm)
-summary(lmm_age_only)
+#summary(lmm_age_only)
 #2) Experience only
 lmm_experience_only <- lmer (prop_looking ~ exp_centered + (1|subject_id) + (1|media_name), data = for_lmm)
-summary(lmm_experience_only)
+#summary(lmm_experience_only)
 #3)Accumulator model
 lmm_accumulator <- lmer (prop_looking ~ exp_centered * age_centered + (1|subject_id) + (1|media_name), data = for_lmm)
-summary(lmm_accumulator)
+#summary(lmm_accumulator)
 #4) Additive Model
 lmm_aditive <- lmer (prop_looking ~ exp_centered + age_centered + (1|subject_id) + (1|media_name), data = for_lmm)
-summary(lmm_aditive) #<- SELECTED MODEL
+#summary(lmm_aditive) #<- SELECTED MODEL
 
 ```
 
