@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
+library(fitdistrplus)
+library(MASS)
 library(tidyverse)
 library(here)
 library(dplyr)
@@ -84,6 +86,25 @@ arch_re_zero<- arch_re_zero%>%
 
 
 ```
+
+### Looking at the distributions of the predictors and the DV
+```{r}
+#AGE CENTERED
+plotdist(for_lmm$age_centered, histo = T, demp = T)
+descdist(for_lmm$age_centered, boot=1000)
+
+#EXPERIENCE CENTERED
+plotdist(for_lmm$exp_centered, histo = T, demp = T)
+descdist(for_lmm$exp_centered, boot=1000)
+
+#DEPENDENT VARIABLE
+plotdist(for_lmm$prop_looking, histo = T, demp = T)
+descdist(for_lmm$prop_looking, boot=1000)
+
+
+```
+
+
 ##A) GROWTH CURVE ANALYSES (GCA)
 
 ##----Preparation for GCA----##
@@ -218,6 +239,20 @@ additive_mer <-  additive_mer %>% as.data.frame() %>%
   write_csv(file = "supplementary_tables/additive_mer.csv")
 
 ```
+
+
+
+###--- Plotting GAMs-----###
+```{r}
+plot.gam(gam1$gam, shift = coef(gam1$gam)[1])
+plot.gam(gam2$gam, shift = coef(gam2$gam)[1])
+
+#Finding the distribution that best fits the age variable in the maturation only GAM
+gam1_predict<- predict(gam1$gam)
+
+dist_gam1<- fitdistr(gam1_predict, densfun = "lognormal")
+```
+
 
 ##c) Logistic Mixed Effect Models (GLMER)
 ###----Building 4 GLMERs---##
