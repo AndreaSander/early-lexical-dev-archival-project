@@ -258,7 +258,7 @@ arch_comp_data <- eye_data_arch %>%
   filter(!is.na(media_name)) %>%
   group_by(recording_name) %>%
   mutate(trial_number = rleid(media_name)) %>% #create trial number
-  full_join(Demo_arch) %>%
+  full_join(Demo_arch) %>% #11 unmatched rows as identified with setdiff above (all identified as missing from Tobii)
   ungroup()
 
 #Adding an Area of Interest column to the newly merged data frame
@@ -271,9 +271,9 @@ AOI<- read_excel(here("AOI_maker.xlsx")) %>%
 #Check potential issues with the merging
 
 setdiff(AOI$media_name, arch_comp_data$media_name) #0 no differences
-setdiff(arch_comp_data$media_name, AOI$media_name)# The differences are 1) attention getters, 2) test trials from the "learn" experiment, for which we are only interested in the learning phase
+setdiff(arch_comp_data$media_name, AOI$media_name)# The differences are just from test trials from the "learn" experiment, for which we are only interested in the learning phase. So no problem.
 
-arch_aoi_data <- left_join(arch_comp_data, AOI, by = c("studio_project_name", "trial_number", "media_name", "studio_test_name"))
+arch_aoi_data <- left_join(arch_comp_data, AOI, by = c("studio_project_name", "trial_number", "media_name", "studio_test_name")) #All the rows were kept. No issues.
 
 #calculate amount of trials pre-exclusions
 trial_n <- arch_aoi_data %>%
@@ -324,9 +324,6 @@ arch_final<- arch_final %>%
 save(arch_final, file = here("merged_data_sets/arch_final.Rda"))
 
 
-
-#load(here("R Analyses/Eye_data/arch_final.Rda"))
-
 #getting descriptive information for the manuscript
 arch_final_unique <- arch_final %>%
   distinct(subject_id, .keep_all=T)
@@ -346,22 +343,6 @@ sim_bi<- arch_final_unique %>%
 trials<-arch_final %>%
   distinct(media_name, recording_name, .keep_all = F) #1990 TOTAL TRIALS
 ```
-
-
-
-```{r}
-
-load(here("arch_final_2.Rda"))
-
-arch_final <- arch_final %>%
-  select (-c(recording_name, subject_id))
-
-final <- final %>%
-  select(-c(recording_name, subject_id))
-
-#all the unmatched rows arew on learn. There must be a problem in the anonimizing data set. Check
-```
-
 
 ```{r}
 ## this chunk is to create alternative final data set to include trilingual data, as per reviewers concerns
