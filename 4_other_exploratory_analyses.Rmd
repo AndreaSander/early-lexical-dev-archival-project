@@ -87,22 +87,7 @@ arch_re_zero<- arch_re_zero%>%
 
 ```
 
-### Looking at the distributions of the predictors and the DV
-```{r}
-#AGE CENTERED
-plotdist(for_lmm$age_centered, histo = T, demp = T)
-descdist(for_lmm$age_centered, boot=1000)
 
-#EXPERIENCE CENTERED
-plotdist(for_lmm$exp_centered, histo = T, demp = T)
-descdist(for_lmm$exp_centered, boot=1000)
-
-#DEPENDENT VARIABLE
-plotdist(for_lmm$prop_looking, histo = T, demp = T)
-descdist(for_lmm$prop_looking, boot=1000)
-
-
-```
 
 
 ##A) GROWTH CURVE ANALYSES (GCA)
@@ -864,6 +849,3 @@ summary(lmm_aditive_common) #<- SELECTED MODEL
 
 
 ```
-
-
-```{r}

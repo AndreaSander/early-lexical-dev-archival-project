@@ -410,4 +410,3 @@ save(arch_final_6m, file = here("merged_data_sets/arch_final_6m.Rda"))
 ```
 
 
-```{r}
