@@ -1,0 +1,22 @@
+"0","#using plot_model from sjplot in brackets added the values in which to predict effects so that the function does not extrapolate."
+"0","x<- plot_model(lmm_viz_aditive, type=""eff"", terms = c(""age_months[14,20, 26, 32, 38, 44, 48] "", ""exp_target_lang_prop[1 , 0.70, 0.39]""), line.size = 0.8, colors = c(""#feb24c"", ""#d7301f"", ""#7f0000""),"
+"0","           legend.title = ""Exposure bins (percentage range)"", title = ""Predicted values of looking accuracy for the additive model"")"
+"2","Package `effects` is not available, but needed for `ggeffect()`. Either install package
+  `effects`, or use `ggpredict()`. Calling `ggpredict()` now.
+"
+"0","#changing the legend levels to ra-name the groups in a more appropriate way"
+"0","x$data$group_col<- as.character(x$data$group_col)"
+"0","x$data$group_col<- factor(x$data$group_col)"
+"0","levels(x$data$group_col)<- c(""10-39"", ""40-70"", ""71-100"")"
+"0",""
+"0","x + theme_bw() +"
+"0","  xlab(""Age (months)"")+"
+"0","  ylab(""Proportion looking to target"")+"
+"0","  ylim(0.4, 1.0)+"
+"0","  xlim(14, 48)+"
+"0","  geom_hline(yintercept = 0.5 , linetype = ""dashed"")+"
+"0","  annotate(""text"", y=0.53, x=30, label=""Chance looking to target"", size=8)+"
+"0","  guides (col= guide_legend(reverse= TRUE))+"
+"0","  theme(legend.text = element_text(size = 22), legend.title = element_text(size = 22), plot.title = element_text(size = 30), axis.title = element_text(size = 30), axis.text = element_text(size = 30))   "
+"2","[38;5;232mScale for [32my[38;5;232m is already present.
+Adding another scale for [32my[38;5;232m, which will replace the existing scale.[39m"

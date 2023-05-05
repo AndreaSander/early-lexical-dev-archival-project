@@ -1,0 +1,1 @@
+"0","plot.gam(gam2$gam, shift = coef(gam2$gam)[1])"

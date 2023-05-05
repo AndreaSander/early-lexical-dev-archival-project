@@ -1,0 +1,4 @@
+"0","marginal<- ggMarginal(pm, type=""histogram"", aes(y=after_stat(count)),"
+"0","           xparams = list(binwidth = 12, fill= ""#fc8d59""),"
+"0","           yparams = list(binwidth = 30, fill= ""#91cf60""))"
+"0","print(marginal)"

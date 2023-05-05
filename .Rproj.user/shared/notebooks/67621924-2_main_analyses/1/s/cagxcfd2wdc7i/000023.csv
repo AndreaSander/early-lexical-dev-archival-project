@@ -1,0 +1,1 @@
+"0","res_simulation  <- simulateResiduals(fittedModel = lmm_aditive , plot = T)"

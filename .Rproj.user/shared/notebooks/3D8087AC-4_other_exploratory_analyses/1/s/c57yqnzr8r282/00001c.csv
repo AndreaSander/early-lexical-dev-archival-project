@@ -1,7 +1,0 @@
-"0","arch_fre_items_aoa <- left_join(fre_items_aoa, arch_items, by=""item"") %>%
-    filter(trial_lang ==""french"") %>%
-  mutate(item = paste(item, ""fre"", sep=""_""))
-"
-"2","Error in filter(trial_lang == ""french"") %>% arch_fre_items_aoa <- left_join(fre_items_aoa,  : 
-  object 'trial_lang' not found
-"

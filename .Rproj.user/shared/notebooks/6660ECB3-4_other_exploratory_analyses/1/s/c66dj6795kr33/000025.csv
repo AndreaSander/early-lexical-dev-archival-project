@@ -1,0 +1,3 @@
+"0",""
+"0","fd<-derivSimulCI(gam1$gam)"
+"0","plot.derivSimulCI(fd, sizer = TRUE)"

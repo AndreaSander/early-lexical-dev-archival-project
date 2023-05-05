@@ -1,7 +1,0 @@
-"0"," "
-"0",""
-"0","plot_3<- image_read(""predicted_values_layer2.png"")"
-"0","plot_4<- image_read(""real_values_layer2.png"")"
-"0","both2 <- image_scale(c(plot_3, plot_4), ""1200"")"
-"0",""
-"0","image_average(both2)"
