@@ -1,7 +1,0 @@
-"0","model_performance(lmm_aditive)"
-"1","[34m# Indices of model performance[39m
-
-AIC     |    AICc |     BIC | R2 (cond.) | R2 (marg.) |   ICC |  RMSE | Sigma
------------------------------------------------------------------------------
-842.419 | 842.464 | 875.631 |      0.155 |      0.040 | 0.120 | 0.278 | 0.287
-"
