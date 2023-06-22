@@ -16,7 +16,7 @@ library(dplyr)
 library(lme4)
 library(lmerTest)
 library(afex)
-#remotes::install_github("dmirman/gazer") #needed to install gazer
+remotes::install_github("dmirman/gazer") #needed to install gazer
 library(gazer)
 library(ggiraph)
 library(ggiraphExtra)
@@ -171,7 +171,7 @@ pm<- m %>%
   ggplot(aes(x=age_months, y=exp_to_target_lang)) +
   geom_point() +
   theme(legend.position="none")+
-  xlab("Age(months)") +
+  xlab("Age (months)") +
   ylab("Experience with target language (%)")+
     ggtitle("Distribution of participants by experience and age")+
   theme_bw()
