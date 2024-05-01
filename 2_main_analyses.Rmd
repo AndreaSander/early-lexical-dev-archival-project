@@ -22,7 +22,7 @@ library(devtools)
 #remotes::install_github("dmirman/gazer") #needed to install gazer
 library(gazer)
 library(mgcv)
-library(gamm4)
+#library(gamm4)
 library(broom)
 library(ggiraph)
 library(ggiraphExtra)
