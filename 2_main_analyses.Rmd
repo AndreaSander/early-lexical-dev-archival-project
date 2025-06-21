@@ -195,4 +195,47 @@ performance::check_model (lmm_aditive, panel=T)
 
 ```
 
+##------------------- LMM models with different random effect structures-----------------------------##
+```{r}
+
+#Random slopes for age and experience
+ran1_lmm_aditive <- lmer (prop_looking ~ exp_centered + age_centered + (1 + exp_centered + age_centered | subject_id) + (1|media_name), data = for_lmm) #Fails to converge.
+
+#randome slopes for experience by subject
+ran2_lmm_aditive <- lmer (prop_looking ~ exp_centered + age_centered + (1 + exp_centered| subject_id) + (1|media_name), data = for_lmm) # It converges but it is singlular with exp center being highly correlated
+
+summary(ran2_lmm_aditive) #similar pattern of results
+anova(ran2_lmm_aditive, lmm_aditive) #not statistically different
+
+#adding study_name to the for_lmm dataset
+study_name<- arch_re_zero_c %>% 
+  ungroup()%>%
+  select (studio_project_name, recording_name) %>%
+  distinct()
+
+for_lmm_study<- for_lmm %>%
+  left_join(study_name)
+
+#Random intercepts with item and subject nested by study
+ran3_lmm_additive<- lmer (prop_looking ~ exp_centered + age_centered +  (1 | studio_project_name/subject_id) + 
+                        (1 | studio_project_name/media_name), data = for_lmm_study)  #Failed to converge
+#Random intercepts with items nested by study
+ran4_lmm_additive<- lmer (prop_looking ~ exp_centered + age_centered +  (1 | subject_id) + 
+                        (1 | studio_project_name/media_name), data = for_lmm_study)
+
+for_comparison<- lmm_aditive <- lmer (prop_looking ~ exp_centered + age_centered + (1|subject_id) + (1|media_name), data = for_lmm_study)
+
+
+summary(ran4_lmm_additive) #This does dim the effect of age, and the random effects do absorbe a bit more of the variance from age.
+
+anova(ran4_lmm_additive, for_comparison) #But no statistical difference between models so it does not make the models significantly better.
+
+
+ran5_lmm_additive<- lmer (prop_looking ~ exp_centered + age_centered + (1| subject_id) + (1+ exp_centered|media_name), data = for_lmm) #singular fit
+
+#random slope of exposure by item
+summary(ran5_lmm_additive)
+anova(ran5_lmm_additive, lmm_aditive) #No statistical difference
+
+```
 
